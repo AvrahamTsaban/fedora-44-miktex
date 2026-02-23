@@ -7,7 +7,7 @@ This guide summarizes the process of building MiKTeX from source on Fedora 44. S
 1.  **Library Fragmentation:** On Fedora, HarfBuzz is split into several components (e.g., `libharfbuzz` and `libharfbuzz-subset`). MiKTeX’s linker expects these to be unified or named differently.
 2.  **Symbol Errors:** Linking fails if `hb_subset` functions are not explicitly linked, as they reside in a separate library file in Fedora.
 
-> **Note:** The previously reported `hb.h: No such file or directory` error when building hitex with CMake 4.x and system HarfBuzz has been fixed. The hitex build target now correctly links to `MiKTeX::Imported::HARFBUZZ` when `USE_SYSTEM_HARFBUZZ=TRUE`, propagating the system HarfBuzz include directories.
+> **Note:** The previously reported `hb.h: No such file or directory` error when building hitex with CMake 4.x and system HarfBuzz has been fixed. The hitex build target now correctly links to `MiKTeX::Imported::HARFBUZZ` when `USE_SYSTEM_HARFBUZZ=ON`, propagating the system HarfBuzz include directories.
 
 ## Prerequisites
 

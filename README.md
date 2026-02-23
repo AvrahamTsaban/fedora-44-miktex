@@ -4,10 +4,10 @@ This guide summarizes the process of building MiKTeX from source on Fedora 44. S
 
 ## The Challenges
 
-1.  **Dependency Mismatch:** The MiKTeX build system defaults to looking for internal library versions (e.g., `-lmiktex-harfbuzz`) which do not exist on Fedora.
-2.  **Header Resolution:** Even with system libraries installed, the compiler often fails to locate specific headers like `hb.h` due to non-standard include paths.
-3.  **Library Fragmentation:** On Fedora, HarfBuzz is split into several components (e.g., `libharfbuzz` and `libharfbuzz-subset`). MiKTeX’s linker expects these to be unified or named differently.
-4.  **Symbol Errors:** Linking fails if `hb_subset` functions are not explicitly linked, as they reside in a separate library file in Fedora.
+1.  **Library Fragmentation:** On Fedora, HarfBuzz is split into several components (e.g., `libharfbuzz` and `libharfbuzz-subset`). MiKTeX’s linker expects these to be unified or named differently.
+2.  **Symbol Errors:** Linking fails if `hb_subset` functions are not explicitly linked, as they reside in a separate library file in Fedora.
+
+> **Note:** The previously reported `hb.h: No such file or directory` error when building hitex with CMake 4.x and system HarfBuzz has been fixed. The hitex build target now correctly links to `MiKTeX::Imported::HARFBUZZ` when `USE_SYSTEM_HARFBUZZ=ON`, propagating the system HarfBuzz include directories.
 
 ## Prerequisites
 
@@ -20,17 +20,9 @@ Ensure the following (or newer) development tools are installed:
 
 ## Build Instructions
 
-### 1. Library Naming Workaround (Symlinks)
-To satisfy the linker's search for "MiKTeX-branded" libraries, create symbolic links to the existing system libraries:
+### 1. Configure the Build
 
-```bash
-sudo ln -s /usr/lib64/libharfbuzz.so /usr/lib64/libmiktex-harfbuzz.so
-sudo ln -s /usr/lib64/libharfbuzz-subset.so /usr/lib64/libmiktex-harfbuzz-subset.so
-```
-
-### 2. Configure the Build
-
-Use the following `cmake` command to force the use of system libraries, define header paths, and inject the required linker flags:
+Use the following `cmake` command to force the use of system libraries and inject the required linker flags:
 
 ```bash
 rm -rf CMakeCache.txt
@@ -38,20 +30,19 @@ rm -rf CMakeCache.txt
 cmake -DMIKTEX_LINUX_DIST=fedora \
       -DMIKTEX_USE_SYSTEM_LIBRARIES=ON \
       -DCMAKE_PREFIX_PATH=/usr \
-      -DCMAKE_INCLUDE_PATH=/usr/include/harfbuzz \
       -DCMAKE_EXE_LINKER_FLAGS="-lharfbuzz-subset -lharfbuzz -licuuc -licui18n" \
       ../miktex/
 
 ```
 
-### 3. Compile
+### 2. Compile
 
 ```bash
 make
 
 ```
 
-### 4. Package as RPM
+### 3. Package as RPM
 
 Ensure you have ownership of the build directory to avoid permission errors during manifest generation:
 
